@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://minor_policy:minor_policy@postgres:5432/minor_policy
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: minor_policy
+      POSTGRES_PASSWORD: minor_policy
+      POSTGRES_DB: minor_policy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U minor_policy -d minor_policy"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+    volumes:
+      - minor-policy-data:/var/lib/postgresql/data
+volumes:
+  minor-policy-data:

@@ -1,0 +1,5 @@
+{
+  "events": [
+    {"event_id": "evt-demo-1", "tenant_id": "tenant-demo", "account_id": "account-a", "source_seq": 1, "kind": "age_evidence"}
+  ]
+}

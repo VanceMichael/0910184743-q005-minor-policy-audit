@@ -1,0 +1,13 @@
+{
+  "name": "minor-policy-audit-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "test": "npm run build && node --test test/*.test.js"
+  },
+  "devDependencies": {"@types/node": "22.15.21", "typescript": "5.9.2"},
+  "engines": {"node": ">=22"}
+}
