@@ -1,5 +1,36 @@
 {
   "events": [
-    {"event_id": "evt-demo-1", "tenant_id": "tenant-demo", "account_id": "account-a", "source_seq": 1, "kind": "age_evidence"}
+    {
+      "event_id": "evt-demo-1",
+      "tenant_id": "tenant-demo",
+      "account_id": "account-a",
+      "source_seq": 1,
+      "kind": "age_evidence",
+      "payload": {"age_band": "13_to_15", "attestation_id": "att-001", "method": "carrier"}
+    },
+    {
+      "event_id": "evt-demo-2",
+      "tenant_id": "tenant-demo",
+      "account_id": "account-a",
+      "source_seq": 2,
+      "kind": "guardianship",
+      "payload": {"guardian_id": "guardian-1", "relation": "parent", "status": "active"}
+    },
+    {
+      "event_id": "evt-demo-3",
+      "tenant_id": "tenant-demo",
+      "account_id": "account-a",
+      "source_seq": 3,
+      "kind": "content_risk",
+      "payload": {"content_id": "content-9", "risk_level": "high", "categories": ["violence"], "action": "publish"}
+    },
+    {
+      "event_id": "evt-demo-4",
+      "tenant_id": "tenant-demo",
+      "account_id": "account-a",
+      "source_seq": 4,
+      "kind": "appeal",
+      "payload": {"appeal_id": "appeal-1", "target_decision_id": 3, "reason": "误判拦截申诉"}
+    }
   ]
 }

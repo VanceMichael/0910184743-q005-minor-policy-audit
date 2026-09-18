@@ -6,8 +6,17 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
+    "migrate": "node dist/migrate.js",
     "test": "npm run build && node --test test/*.test.js"
   },
-  "devDependencies": {"@types/node": "22.15.21", "typescript": "5.9.2"},
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.21",
+    "@types/pg": "^8.11.10",
+    "embedded-postgres": "16.14.0-beta.17",
+    "typescript": "5.9.2"
+  },
   "engines": {"node": ">=22"}
 }

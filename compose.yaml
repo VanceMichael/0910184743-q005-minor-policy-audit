@@ -1,13 +1,5 @@
+# 编排：postgres（探活 + 持久卷）→ migrate（一次性迁移）→ app（等待迁移完成）
 services:
-  app:
-    build: .
-    environment:
-      DATABASE_URL: postgresql://minor_policy:minor_policy@postgres:5432/minor_policy
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
   postgres:
     image: postgres:16-alpine
     environment:
@@ -21,5 +13,36 @@ services:
       retries: 15
     volumes:
       - minor-policy-data:/var/lib/postgresql/data
+
+  migrate:
+    build: .
+    command: ["node", "dist/migrate.js"]
+    environment:
+      DATABASE_URL: postgresql://minor_policy:minor_policy@postgres:5432/minor_policy
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://minor_policy:minor_policy@postgres:5432/minor_policy
+      # 引导密钥仅用于换取签名令牌，生产环境必须通过环境覆盖
+      BOOTSTRAP_SECRET: ${BOOTSTRAP_SECRET:-dev-bootstrap-secret}
+      PORT: "8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    ports:
+      - "8080:8080"
+
 volumes:
   minor-policy-data:
