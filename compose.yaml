@@ -1,13 +1,4 @@
 services:
-  app:
-    build: .
-    environment:
-      DATABASE_URL: postgresql://minor_policy:minor_policy@postgres:5432/minor_policy
-    depends_on:
-      postgres:
-        condition: service_healthy
-    ports:
-      - "8080:8080"
   postgres:
     image: postgres:16-alpine
     environment:
@@ -15,11 +6,56 @@ services:
       POSTGRES_PASSWORD: minor_policy
       POSTGRES_DB: minor_policy
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U minor_policy -d minor_policy"]
+      test: ["CMD-SHELL", "pg_isready -U minor_policy -d minor_policy -h 127.0.0.1"]
       interval: 2s
-      timeout: 2s
-      retries: 15
+      timeout: 3s
+      retries: 20
     volumes:
       - minor-policy-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  migrate:
+    build:
+      context: .
+      target: build
+    command: ["node", "dist/migrate.js"]
+    environment:
+      DATABASE_URL: postgresql://minor_policy:minor_policy@postgres:5432/minor_policy
+      MIGRATIONS_DIR: /app/migrations
+      # 演示用种子密钥；生产应通过机密注入。含一把已退役旧 key，用于验证轮换后历史可读
+      SIGNING_KEYS: >-
+        [{"tenant_id":"tenant-demo","key_id":"key-demo-1","secret":"secret-demo-1","roles":["guardian","reviewer","auditor"],"subject":"guardian-demo"},
+         {"tenant_id":"tenant-demo","key_id":"key-demo-old","secret":"secret-demo-old","status":"retired","roles":["guardian","reviewer","auditor"]}]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: postgresql://minor_policy:minor_policy@postgres:5432/minor_policy
+      MIGRATIONS_DIR: /app/migrations
+      PORT: "8080"
+      ADMIN_TOKEN: change-me-admin-token
+      ALLOW_FAULT_INJECTION: "false"
+      SIGNING_KEYS: >-
+        [{"tenant_id":"tenant-demo","key_id":"key-demo-1","secret":"secret-demo-1","roles":["guardian","reviewer","auditor"],"subject":"guardian-demo"},
+         {"tenant_id":"tenant-demo","key_id":"key-demo-old","secret":"secret-demo-old","status":"retired","roles":["guardian","reviewer","auditor"]}]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    restart: unless-stopped
+
 volumes:
   minor-policy-data:

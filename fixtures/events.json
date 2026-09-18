@@ -1,5 +1,34 @@
 {
-  "events": [
-    {"event_id": "evt-demo-1", "tenant_id": "tenant-demo", "account_id": "account-a", "source_seq": 1, "kind": "age_evidence"}
-  ]
+  "tenant_id": "tenant-demo",
+  "account_id": "account-a",
+  "sequence": [
+    {
+      "event_id": "evt-age-1",
+      "source_seq": 1,
+      "kind": "age_evidence",
+      "payload": {"age_band": "under_13", "confidence": "high"}
+    },
+    {
+      "event_id": "evt-guard-1",
+      "source_seq": 2,
+      "kind": "guardian_authorization",
+      "payload": {"guardian_id": "guardian-demo", "action": "grant", "scope": "messages"}
+    },
+    {
+      "event_id": "evt-content-1",
+      "source_seq": 3,
+      "kind": "content_risk",
+      "payload": {"content_id": "post-1001", "action": "message", "risk": "high", "categories": ["contact"]}
+    },
+    {
+      "event_id": "evt-appeal-1",
+      "source_seq": 4,
+      "kind": "appeal",
+      "payload": {"target_content_event_id": "evt-content-1", "claim": "false_positive"}
+    }
+  ],
+  "expected": {
+    "evt-content-1": "block",
+    "evt-appeal-1": "overturned -> allow"
+  }
 }
